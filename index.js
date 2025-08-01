@@ -16,7 +16,6 @@ const bodyParser = require("body-parser");
 const routes_1 = require("./routes");
 const fileUpload = require('express-fileupload');
 const logger = require("./util/logger");
-const config_data = require('./global.json');
 const session = require("express-session");
 const http = require("http");
 const socket_1 = require("./socket");
@@ -24,9 +23,9 @@ const socket_1 = require("./socket");
     "type": "mysql",
     "host": "localhost",
     "port": 3306,
-    "username": config_data.global.db_uid,
-    "password": config_data.global.db_pwd,
-    "database": config_data.global.db_dbname,
+    "username": config_data.global.db_uid, //mysql 帳號
+    "password": config_data.global.db_pwd, //mysql 密碼
+    "database": config_data.global.db_dbname, //DB 名稱
     "synchronize": true,
     "logging": false,
     "entities": [
@@ -65,9 +64,9 @@ const socket_1 = require("./socket");
             }
         });
     });
-    server.listen(config_data.global.api_host_port, function () {
+    server.listen(8081, function () {
         return __awaiter(this, void 0, void 0, function* () {
-            logger.info(`Express server has started on port ${config_data.global.api_host_port}. `);
+            logger.info(`Express server has started on port ${8081}. `);
         });
     });
 })).catch(error => logger.error(error));
