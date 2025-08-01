@@ -1,6 +1,11 @@
+建立 volume 儲存資料
+```bash
+docker volume create mysql-data
+```
+
 執行mysql docker 預設密碼和DB名稱
 ```bash
-docker run -d -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=test mysql:8
+docker run -d -p 3306:3306 --name mysql -v /mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=test mysql:8 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 ```
 
 ## 安裝依賴
