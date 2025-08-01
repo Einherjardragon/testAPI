@@ -149,7 +149,7 @@ class TourCarController {
                             _obj.upload = _body.upload ? 1 : 0;
                             _obj.status = "Pending";
                             yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
-                            const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId } });
+                            const getTestMapping = yield _this.orm_car_mapping.findOne({ where: { patientId: _body.patientId } });
                             if (!getTestMapping) {
                                 const _mapping = new TourCarMapping_1.TourCarMapping();
                                 const testData = _this.testMappingData(_body.caseName);
@@ -157,6 +157,10 @@ class TourCarController {
                                 _mapping.patientId = _body.patientId;
                                 _mapping.accNumbers = testData.accNum.join();
                                 _mapping.mapping_data = JSON.stringify(testData);
+                                if (testData.accNum.length == 1) {
+                                    _obj.mapping = testData.accNum[0];
+                                    yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
+                                }
                                 yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
                             }
                         }
