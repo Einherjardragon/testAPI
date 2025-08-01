@@ -9,7 +9,9 @@ npm install
 ```
 
 執行
+```bash
 node index.js
+```
 
 預設port 8081
 若要更改port 可直接在index.js
