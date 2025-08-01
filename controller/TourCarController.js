@@ -48,7 +48,7 @@ class TourCarController {
                             _obj.job = _body.job;
                             _obj.name = _body.name;
                             _obj.series = _body.series;
-                            _obj.time = now;
+                            _obj.time = new Date(_body.time);
                             yield _this.orm_car.save(_obj);
                         }
                         else {
@@ -105,11 +105,12 @@ class TourCarController {
             const param_job = decodeURIComponent(request.params.job);
             const cases = yield this.orm_case
                 .createQueryBuilder('case')
-                .leftJoinAndSelect(TourCarMapping_1.TourCarMapping, 'mapping', 'case.caseName = mapping.caseName')
+                .leftJoinAndSelect(TourCarMapping_1.TourCarMapping, 'mapping', 'case.patientId = mapping.patientId')
                 .where('case.map_job = :mapJob', { mapJob: param_job })
                 .select([
                 'case.id AS id',
                 'case.map_job AS map_job',
+                'case.patientId AS patientId',
                 'case.caseName AS caseName',
                 'case.series AS series',
                 'case.status AS status',
@@ -148,17 +149,20 @@ class TourCarController {
                             _obj.upload = _body.upload ? 1 : 0;
                             _obj.status = "Pending";
                             yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
+                            const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId } });
+                            if (!getTestMapping) {
+                                const _mapping = new TourCarMapping_1.TourCarMapping();
+                                const testData = _this.testMappingData(_body.caseName);
+                                ;
+                                _mapping.patientId = _body.patientId;
+                                _mapping.accNumbers = testData.accNum.join();
+                                _mapping.mapping_data = JSON.stringify(testData);
+                                yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
+                            }
                         }
                         else {
                             reject({ codeStatus: 404, message: `duplicate caseName.` });
                         }
-                        const _mapping = new TourCarMapping_1.TourCarMapping();
-                        const testData = _this.testMappingData(_body.caseName);
-                        ;
-                        _mapping.caseName = _body.caseName;
-                        _mapping.accNumbers = testData.accNum.join();
-                        _mapping.mapping_data = JSON.stringify(testData);
-                        yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
                         yield _this.saveRecord(SysLogs_1.SysLog, LogMessage);
                         resolve({ codeStatus: 200, message: LogMessage.content });
                     }
@@ -175,14 +179,15 @@ class TourCarController {
     getTourCarCaseMapping(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const param_case = decodeURIComponent(request.params.job);
-            const getTourCarCaseMappingResult = yield this.orm_car_mapping.find({ where: { caseName: param_case } });
+            const getTourCarCaseMappingResult = yield this.orm_car_mapping.find({ where: { patientId: param_case } });
             return { codeStatus: 200, result: getTourCarCaseMappingResult };
         });
     }
     reTourCarCaseMapping(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const param_case = decodeURIComponent(request.params.case);
-            const getTourCarCaseMappingResult = yield this.orm_car_mapping.findOne({ where: { caseName: param_case } });
+            const getTourCarCaseRec = yield this.orm_case.findOne({ where: { caseName: param_case } });
+            const getTourCarCaseMappingResult = yield this.orm_car_mapping.findOne({ where: { patientId: getTourCarCaseRec.patientId } });
             const testData = this.testMappingData(param_case);
             getTourCarCaseMappingResult.mapping_data = JSON.stringify(testData);
             yield this.orm_car_mapping.save(getTourCarCaseMappingResult);

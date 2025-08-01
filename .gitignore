@@ -1,0 +1,9 @@
+.idea/
+.vscode/
+tmp/
+temp/
+postData
+node_modules
+WebAPI
+build
+package-lock.json

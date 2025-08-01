@@ -1,0 +1,33 @@
+{
+   "name": "v5-medical-platform",
+   "version": "0.0.1",
+   "description": "V5 AI medical platform.",
+   "dependencies": {
+      "amqplib": "^0.5.6",
+      "body-parser": "^1.18.1",
+      "csv-parser": "^3.0.0",
+      "busboy": "^1.6.0",
+      "compressing": "^1.5.1",
+      "express": "^4.15.4",
+      "express-fileupload": "^1.3.1",
+      "express-session": "^1.17.1",
+      "log4js": "^6.6.1",
+      "moment": "^2.29.1",
+      "moment-timezone": "^0.5.34",
+      "mysql": "^2.14.1",
+      "node-jsencrypt": "^1.0.0",
+      "node-schedule": "^2.1.1",
+      "redis": "^4.1.1",
+      "reflect-metadata": "^0.1.10",
+      "request": "^2.88.2",
+      "socket.io": "^4.5.1",
+      "webpack": "^5.89.0",
+      "cors": "^2.8.5",
+      "multer": "1.4.5-lts.1"
+   },
+   "scripts": {
+      "start": "ts-node src/index.ts",
+      "debug": "ts-node src/index.ts",
+      "build": "tsc"
+   }
+}

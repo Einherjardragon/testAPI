@@ -23,9 +23,9 @@ const socket_1 = require("./socket");
     "type": "mysql",
     "host": "localhost",
     "port": 3306,
-    "username": config_data.global.db_uid, //mysql 帳號
-    "password": config_data.global.db_pwd, //mysql 密碼
-    "database": config_data.global.db_dbname, //DB 名稱
+    "username": "root", //mysql 帳號
+    "password": "123456", //mysql 密碼
+    "database": "test", //DB 名稱
     "synchronize": true,
     "logging": false,
     "entities": [
