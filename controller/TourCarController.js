@@ -81,8 +81,14 @@ class TourCarController {
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
                         const getTourCarRec = yield _this.orm_car.findOne({ where: { job: _body.job } });
+                        yield _this.orm_case
+                            .createQueryBuilder()
+                            .delete()
+                            .from(TourCarCase_1.TourCarCase)
+                            .where("map_job = :mapJob", { mapJob: _body.job })
+                            .execute();
                         if (!getTourCarRec) {
-                            reject({ codeStatus: 404, message: `Delete new TourCar Record job: ${_body.job} fail.` });
+                            reject({ codeStatus: 404, message: `Delete TourCar Record job: ${_body.job} fail.` });
                         }
                         else {
                             yield _this.orm_car.remove(getTourCarRec);
@@ -111,6 +117,7 @@ class TourCarController {
                 'case.id AS id',
                 'case.map_job AS map_job',
                 'case.patientId AS patientId',
+                'case.seriesId AS seriesId',
                 'case.caseName AS caseName',
                 'case.series AS series',
                 'case.status AS status',
@@ -138,34 +145,36 @@ class TourCarController {
             return new Promise(function (resolve, reject) {
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
+                        const getTourCarRec = yield _this.orm_car.findOne({ where: { job: param_job } });
                         const getTourCarCaseRec = yield _this.orm_case.findOne({ where: { caseName: _body.caseName } });
-                        if (!getTourCarCaseRec) {
-                            const _obj = new TourCarCase_1.TourCarCase();
-                            _obj.map_job = param_job;
-                            _obj.caseName = _body.caseName;
-                            _obj.patientId = _body.patientId;
-                            _obj.seriesId = _body.seriesId;
-                            _obj.series = _body.series;
-                            _obj.upload = _body.upload ? 1 : 0;
-                            _obj.status = "Pending";
-                            yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
-                            const getTestMapping = yield _this.orm_car_mapping.findOne({ where: { patientId: _body.patientId } });
-                            if (!getTestMapping) {
-                                const _mapping = new TourCarMapping_1.TourCarMapping();
-                                const testData = _this.testMappingData(_body.caseName);
-                                ;
-                                _mapping.patientId = _body.patientId;
-                                _mapping.accNumbers = testData.accNum.join();
-                                _mapping.mapping_data = JSON.stringify(testData);
-                                if (testData.accNum.length == 1) {
-                                    _obj.mapping = testData.accNum[0];
-                                    yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
+                        if (getTourCarRec) {
+                            if (!getTourCarCaseRec) {
+                                const _obj = new TourCarCase_1.TourCarCase();
+                                _obj.map_job = param_job;
+                                _obj.caseName = _body.caseName;
+                                _obj.patientId = _body.patientId;
+                                _obj.seriesId = _body.seriesId;
+                                _obj.series = _body.series;
+                                _obj.upload = _body.upload ? 1 : 0;
+                                _obj.status = "Pending";
+                                yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
+                                const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId } });
+                                if (!getTestMapping) {
+                                    const _mapping = new TourCarMapping_1.TourCarMapping();
+                                    const testData = _this.testMappingData(_body.caseName);
+                                    ;
+                                    _mapping.patientId = _body.patientId;
+                                    _mapping.accNumbers = testData.accNum.join();
+                                    _mapping.mapping_data = JSON.stringify(testData);
+                                    yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
                                 }
-                                yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
+                            }
+                            else {
+                                reject({ codeStatus: 404, message: `duplicate caseName.` });
                             }
                         }
                         else {
-                            reject({ codeStatus: 404, message: `duplicate caseName.` });
+                            reject({ codeStatus: 404, message: `Not found this job.` });
                         }
                         yield _this.saveRecord(SysLogs_1.SysLog, LogMessage);
                         resolve({ codeStatus: 200, message: LogMessage.content });
