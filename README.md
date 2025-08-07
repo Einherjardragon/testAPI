@@ -32,3 +32,7 @@ node index.js
 ## 20250807
 1. 新增retry post to PACS、post AI(暫時未實作)
 2. 調整批次新增時，根據files內資料進行case資料儲存
+3. 批次刪除同步清除Dicom資料
+
+## 20250808
+1. 更新單筆case資料儲存

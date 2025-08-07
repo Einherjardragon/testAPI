@@ -26,3 +26,6 @@
 2025-08-07 17:03:29.498 [INFO] Express server has started on port 8081. 
 2025-08-07 17:12:18.560 [INFO] Express server has started on port 8081. 
 2025-08-07 17:13:29.712 [INFO] Express server has started on port 8081. 
+2025-08-07 17:37:20.024 [INFO] Express server has started on port 8081. 
+2025-08-07 20:48:56.683 [INFO] Express server has started on port 8081. 
+2025-08-07 20:49:56.653 [ERROR] Delete dicom failed UUID: 78ed3bd7-25a42c59-57b21e70-23db7e84-500853c9. errorMessage: connect ECONNREFUSED 127.0.0.1:8042
