@@ -1,10 +1,28 @@
-2025-08-04 11:08:43.678 [INFO] Express server has started on port 8081. 
-2025-08-04 11:14:05.341 [INFO] Express server has started on port 8081. 
-2025-08-04 11:17:24.366 [ERROR] TourCar Delete catch error: QueryFailedError: ER_BAD_FIELD_ERROR: Unknown column 'case.map_job' in 'where clause'.
-2025-08-04 11:19:34.274 [INFO] Express server has started on port 8081. 
-2025-08-04 11:19:37.203 [ERROR] TourCar Delete catch error: QueryFailedError: ER_BAD_FIELD_ERROR: Unknown column 'case.map_job' in 'where clause'.
-2025-08-04 11:20:32.253 [INFO] Express server has started on port 8081. 
-2025-08-04 11:21:28.067 [INFO] Express server has started on port 8081. 
-2025-08-04 13:43:54.469 [INFO] Express server has started on port 8081. 
-2025-08-04 13:47:31.136 [INFO] Express server has started on port 8081. 
-2025-08-04 13:52:51.896 [INFO] Express server has started on port 8081. 
+2025-08-07 16:40:06.865 [ERROR] Error: connect ECONNREFUSED 127.0.0.1:3306
+    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1146:16)
+    --------------------
+    at Protocol._enqueue (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\protocol\Protocol.js:144:48)
+    at Protocol.handshake (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\protocol\Protocol.js:51:23)
+    at PoolConnection.connect (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\Connection.js:116:18)
+    at Pool.getConnection (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\Pool.js:48:16)
+    at D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\driver\mysql\MysqlDriver.js:908:18
+    at new Promise (<anonymous>)
+    at MysqlDriver.createPool (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\driver\mysql\MysqlDriver.js:905:16)
+    at MysqlDriver.connect (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\driver\mysql\MysqlDriver.js:295:36)
+    at DataSource.initialize (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\data-source\DataSource.js:125:27)
+    at DataSource.connect (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\data-source\DataSource.js:164:21) {
+  errno: -4078,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 3306,
+  fatal: true
+}
+2025-08-07 16:41:14.436 [INFO] Express server has started on port 8081. 
+2025-08-07 16:48:50.565 [INFO] Express server has started on port 8081. 
+2025-08-07 16:55:27.282 [INFO] Express server has started on port 8081. 
+2025-08-07 16:58:01.018 [INFO] Express server has started on port 8081. 
+2025-08-07 17:00:56.602 [INFO] Express server has started on port 8081. 
+2025-08-07 17:03:29.498 [INFO] Express server has started on port 8081. 
+2025-08-07 17:12:18.560 [INFO] Express server has started on port 8081. 
+2025-08-07 17:13:29.712 [INFO] Express server has started on port 8081. 

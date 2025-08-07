@@ -1,0 +1,10 @@
+2025-08-04 11:08:43.678 [INFO] Express server has started on port 8081. 
+2025-08-04 11:14:05.341 [INFO] Express server has started on port 8081. 
+2025-08-04 11:17:24.366 [ERROR] TourCar Delete catch error: QueryFailedError: ER_BAD_FIELD_ERROR: Unknown column 'case.map_job' in 'where clause'.
+2025-08-04 11:19:34.274 [INFO] Express server has started on port 8081. 
+2025-08-04 11:19:37.203 [ERROR] TourCar Delete catch error: QueryFailedError: ER_BAD_FIELD_ERROR: Unknown column 'case.map_job' in 'where clause'.
+2025-08-04 11:20:32.253 [INFO] Express server has started on port 8081. 
+2025-08-04 11:21:28.067 [INFO] Express server has started on port 8081. 
+2025-08-04 13:43:54.469 [INFO] Express server has started on port 8081. 
+2025-08-04 13:47:31.136 [INFO] Express server has started on port 8081. 
+2025-08-04 13:52:51.896 [INFO] Express server has started on port 8081. 

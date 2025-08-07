@@ -26,7 +26,15 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 256, default: 'N/A', nullable: true }),
     __metadata("design:type", String)
+], TourCarCase.prototype, "studyId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 256, default: 'N/A', nullable: true }),
+    __metadata("design:type", String)
 ], TourCarCase.prototype, "seriesId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 256, default: 'N/A', nullable: true }),
+    __metadata("design:type", String)
+], TourCarCase.prototype, "instancesUUId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 256, width: 256, default: '0' }),
     __metadata("design:type", String)
@@ -52,11 +60,11 @@ __decorate([
     __metadata("design:type", String)
 ], TourCarCase.prototype, "mapping", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'tinyint', default: 0 }),
+    (0, typeorm_1.Column)({ type: 'tinyint', default: 1 }),
     __metadata("design:type", Number)
 ], TourCarCase.prototype, "postAI", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'tinyint', default: 0 }),
+    (0, typeorm_1.Column)({ type: 'tinyint', default: 1 }),
     __metadata("design:type", Number)
 ], TourCarCase.prototype, "postPACS", void 0);
 exports.TourCarCase = TourCarCase = __decorate([

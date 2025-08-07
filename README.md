@@ -28,3 +28,7 @@ node index.js
 1. 更新批次刪除後，批次下case同步刪除
 2. 更新case儲存時所需帶入的資料
 3. 更新API說明
+
+## 20250807
+1. 新增retry post to PACS、post AI(暫時未實作)
+2. 調整批次新增時，根據files內資料進行case資料儲存

@@ -23,6 +23,18 @@ exports.Routes = [
         action: "deleteTourCar"
     },
     {
+        method: "post",
+        route: "/tourCarCase/:case/retryPACS",
+        controller: TourCarController_1.TourCarController,
+        action: "retryPACS"
+    },
+    {
+        method: "post",
+        route: "/tourCarCase/:case/retryAI",
+        controller: TourCarController_1.TourCarController,
+        action: "retryAI"
+    },
+    {
         method: "get",
         route: "/tourCarCase/:job",
         controller: TourCarController_1.TourCarController,
