@@ -40,3 +40,4 @@ node index.js
 ## 20250812
 1. 新增socket通知，用來即時更新
 2. 模擬accNumber資料
+3. 單一新增後series數量更新

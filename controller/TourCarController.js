@@ -240,6 +240,8 @@ class TourCarController {
                         const getTourCarCaseRec = yield _this.orm_case.findOne({ where: { caseName: _body.caseName } });
                         if (getTourCarRec) {
                             if (!getTourCarCaseRec) {
+                                getTourCarRec.series = getTourCarRec.series + 1;
+                                yield _this.saveRecord(TourCar_1.TourCar, getTourCarRec);
                                 let instancesUUID = "";
                                 const series_data = _this.aseutil.sha1Hash((_body === null || _body === void 0 ? void 0 : _body.patientId) + "|" + (_body === null || _body === void 0 ? void 0 : _body.studyId) + "|" + (_body === null || _body === void 0 ? void 0 : _body.seriesId) + "|" + (_body === null || _body === void 0 ? void 0 : _body.instancesId));
                                 for (let i = 0; i < 5; i++) {
