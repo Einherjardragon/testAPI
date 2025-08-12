@@ -46,7 +46,7 @@ class TourCarController {
                 content: `Add new TourCar Record job: ${_body.job}, ${_body.name}`
             };
             return new Promise(function (resolve, reject) {
-                var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+                var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
                         const _obj = new TourCar_1.TourCar();
@@ -61,8 +61,18 @@ class TourCarController {
                             for (let i = 0; i < caseFiles.length; i++) {
                                 const getTourCarCaseRec = yield _this.orm_case.findOne({ where: { caseName: caseFiles[i].caseName } });
                                 if (!getTourCarCaseRec) {
+                                    const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: (_a = caseFiles[i]) === null || _a === void 0 ? void 0 : _a.patientId } });
+                                    if (!getTestMapping) {
+                                        const _mapping = new TourCarMapping_1.TourCarMapping();
+                                        const testData = _this.testMappingData(caseFiles[i].caseName);
+                                        ;
+                                        _mapping.patientId = (_b = caseFiles[i]) === null || _b === void 0 ? void 0 : _b.patientId;
+                                        _mapping.accNumbers = testData.accNum;
+                                        _mapping.mapping_data = JSON.stringify(testData);
+                                        yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
+                                    }
                                     let instancesUUID = "";
-                                    const series_data = _this.aseutil.sha1Hash(((_a = caseFiles[i]) === null || _a === void 0 ? void 0 : _a.patientId) + "|" + ((_b = caseFiles[i]) === null || _b === void 0 ? void 0 : _b.studyId) + "|" + ((_c = caseFiles[i]) === null || _c === void 0 ? void 0 : _c.seriesId) + "|" + ((_d = caseFiles[i]) === null || _d === void 0 ? void 0 : _d.instancesId));
+                                    const series_data = _this.aseutil.sha1Hash(((_c = caseFiles[i]) === null || _c === void 0 ? void 0 : _c.patientId) + "|" + ((_d = caseFiles[i]) === null || _d === void 0 ? void 0 : _d.studyId) + "|" + ((_e = caseFiles[i]) === null || _e === void 0 ? void 0 : _e.seriesId) + "|" + ((_f = caseFiles[i]) === null || _f === void 0 ? void 0 : _f.instancesId));
                                     for (let i = 0; i < 5; i++) {
                                         instancesUUID += series_data.substring(i * 8, (i + 1) * 8);
                                         if (i !== 4) {
@@ -71,25 +81,14 @@ class TourCarController {
                                     }
                                     const _obj = new TourCarCase_1.TourCarCase();
                                     _obj.map_job = _body === null || _body === void 0 ? void 0 : _body.job;
-                                    _obj.caseName = (_e = caseFiles[i]) === null || _e === void 0 ? void 0 : _e.caseName;
-                                    _obj.patientId = (_f = caseFiles[i]) === null || _f === void 0 ? void 0 : _f.patientId;
-                                    _obj.studyId = (_g = caseFiles[i]) === null || _g === void 0 ? void 0 : _g.studyId;
-                                    _obj.seriesId = (_h = caseFiles[i]) === null || _h === void 0 ? void 0 : _h.seriesId;
+                                    _obj.caseName = (_g = caseFiles[i]) === null || _g === void 0 ? void 0 : _g.caseName;
+                                    _obj.patientId = (_h = caseFiles[i]) === null || _h === void 0 ? void 0 : _h.patientId;
+                                    _obj.studyId = (_j = caseFiles[i]) === null || _j === void 0 ? void 0 : _j.studyId;
+                                    _obj.seriesId = (_k = caseFiles[i]) === null || _k === void 0 ? void 0 : _k.seriesId;
                                     _obj.instancesUUId = instancesUUID;
-                                    _obj.series = _body === null || _body === void 0 ? void 0 : _body.series;
-                                    _obj.upload = ((_j = caseFiles[i]) === null || _j === void 0 ? void 0 : _j.upload) ? 1 : 0;
+                                    _obj.upload = ((_l = caseFiles[i]) === null || _l === void 0 ? void 0 : _l.upload) ? 1 : 0;
                                     _obj.status = "Pending";
                                     yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
-                                    const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId } });
-                                    if (!getTestMapping) {
-                                        const _mapping = new TourCarMapping_1.TourCarMapping();
-                                        const testData = _this.testMappingData(caseFiles[i].caseName);
-                                        ;
-                                        _mapping.patientId = _body.patientId;
-                                        _mapping.accNumbers = testData.accNum.join();
-                                        _mapping.mapping_data = JSON.stringify(testData);
-                                        yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
-                                    }
                                 }
                             }
                         }
@@ -173,7 +172,7 @@ class TourCarController {
                     logger.info(`Delete UUID: ${item}`);
                 }
                 catch (error) {
-                    logger.error(`Delete dicom failed UUID: ${item}. errorMessage: ${error.message}`);
+                    logger.error(`Delete dicom failed UUID: ${item}. errorMessage: ${error}`);
                 }
             }
         });
@@ -183,7 +182,7 @@ class TourCarController {
             _request({
                 method: 'DELETE',
                 uri: url,
-                headers: { 'Authorization': 'Basic ZG9ua2V5OnBvaXV5dHJld3E=' },
+                headers: { 'Authorization': 'Basic b3J0aGFuYzpvcnRoYW5j' },
                 rejectUnauthorized: false,
                 requestCert: false,
                 agent: false
@@ -212,7 +211,6 @@ class TourCarController {
                 'case.seriesId AS seriesId',
                 'case.instancesUUId AS instancesUUId',
                 'case.caseName AS caseName',
-                'case.series AS series',
                 'case.status AS status',
                 'case.upload AS upload',
                 'case.mapping AS mapping',
@@ -242,13 +240,21 @@ class TourCarController {
                         const getTourCarCaseRec = yield _this.orm_case.findOne({ where: { caseName: _body.caseName } });
                         if (getTourCarRec) {
                             if (!getTourCarCaseRec) {
+                                let instancesUUID = "";
+                                const series_data = _this.aseutil.sha1Hash((_body === null || _body === void 0 ? void 0 : _body.patientId) + "|" + (_body === null || _body === void 0 ? void 0 : _body.studyId) + "|" + (_body === null || _body === void 0 ? void 0 : _body.seriesId) + "|" + (_body === null || _body === void 0 ? void 0 : _body.instancesId));
+                                for (let i = 0; i < 5; i++) {
+                                    instancesUUID += series_data.substring(i * 8, (i + 1) * 8);
+                                    if (i !== 4) {
+                                        instancesUUID += "-";
+                                    }
+                                }
                                 const _obj = new TourCarCase_1.TourCarCase();
                                 _obj.map_job = param_job;
                                 _obj.caseName = _body === null || _body === void 0 ? void 0 : _body.caseName;
                                 _obj.patientId = _body === null || _body === void 0 ? void 0 : _body.patientId;
                                 _obj.studyId = _body === null || _body === void 0 ? void 0 : _body.studyId;
                                 _obj.seriesId = _body === null || _body === void 0 ? void 0 : _body.seriesId;
-                                _obj.series = _body === null || _body === void 0 ? void 0 : _body.series;
+                                _obj.instancesUUId = instancesUUID;
                                 _obj.upload = (_body === null || _body === void 0 ? void 0 : _body.upload) ? 1 : 0;
                                 _obj.status = "Pending";
                                 yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
@@ -258,7 +264,7 @@ class TourCarController {
                                     const testData = _this.testMappingData(_body.caseName);
                                     ;
                                     _mapping.patientId = _body === null || _body === void 0 ? void 0 : _body.patientId;
-                                    _mapping.accNumbers = testData.accNum.join();
+                                    _mapping.accNumbers = testData.accNum;
                                     _mapping.mapping_data = JSON.stringify(testData);
                                     yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
                                 }
@@ -301,7 +307,7 @@ class TourCarController {
             return { codeStatus: 200, result: getTourCarCaseMappingResult };
         });
     }
-    updateTourCarCase(request, response, next) {
+    updateTourCarCase(request, response, next, io) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
             let _this = this;
@@ -319,6 +325,20 @@ class TourCarController {
                             getTourCarCaseResult.mapping = _body === null || _body === void 0 ? void 0 : _body.mapping;
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_Log.save(LogMessage);
+                            let s = [
+                                "等它跑起來的時候，你努力的結果就會讓更多人看見的",
+                                "你藏在程式裡的那些有趣的東西，會一直留在那的",
+                                "當你從這裡畢業的時候，只是暫時斷線對吧，下次上線，就是更厲害的倉鼠啦",
+                                "那些天馬行空的有趣想法，別丟了他們~  很有趣，有機會偷偷塞一些到你未來作品裡",
+                                "到達停損點的時候，就關上電腦休息吧，有新的想法就記錄在你的虛數世界(DC)保存",
+                                "從接近零開始到現在完成介面與部分串接，真的已經很棒了，只是缺少時間深入了解",
+                                "希望倉鼠能一直帶著好奇的心，探索遊戲和你覺得有趣的事情",
+                                "再忙也要給自己留一點時間小小的休息一下",
+                                "擁有很多故事的倉鼠，會收集到更多故事的",
+                                "幫上了大忙呢! 把巡迴車的功能做的這麼完整，省下我很多事情啦!"
+                            ];
+                            const _random = Math.floor(Math.random() * 10);
+                            io.sendUpdateTourCar(s[_random]);
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                         }
                         else {
@@ -335,7 +355,7 @@ class TourCarController {
             });
         });
     }
-    retryPACS(request, response, next) {
+    retryPACS(request, response, next, io) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
             const param_case = decodeURIComponent(request.params.case);
@@ -353,6 +373,20 @@ class TourCarController {
                             getTourCarCaseResult.postPACS = 2;
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_Log.save(LogMessage);
+                            let s = [
+                                "等它跑起來的時候，你努力的結果就會讓更多人看見的",
+                                "你藏在程式裡的那些有趣的東西，會一直留在那的",
+                                "當你從這裡畢業的時候，只是暫時斷線對吧，下次上線，就是更厲害的倉鼠啦",
+                                "那些天馬行空的有趣想法，別丟了他們~  很有趣，有機會偷偷塞一些到你未來作品裡",
+                                "到達停損點的時候，就關上電腦休息吧，有新的想法就記錄在你的虛數世界(DC)保存",
+                                "從接近零開始到現在完成介面與部分串接，真的已經很棒了，只是缺少時間深入了解",
+                                "希望倉鼠能一直帶著好奇的心，探索遊戲和你覺得有趣的事情",
+                                "再忙也要給自己留一點時間小小的休息一下",
+                                "擁有很多故事的倉鼠，會收集到更多故事的",
+                                "幫上了大忙呢! 把巡迴車的功能做的這麼完整，省下我很多事情啦!"
+                            ];
+                            const _random = Math.floor(Math.random() * 10);
+                            io.sendUpdateTourCar(s[_random]);
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                         }
                         else {
@@ -369,7 +403,7 @@ class TourCarController {
             });
         });
     }
-    retryAI(request, response, next) {
+    retryAI(request, response, next, io) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
             const param_case = decodeURIComponent(request.params.case);
@@ -387,6 +421,20 @@ class TourCarController {
                             getTourCarCaseResult.postAI = 2;
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_Log.save(LogMessage);
+                            let s = [
+                                "等它跑起來的時候，你努力的結果就會讓更多人看見的",
+                                "你藏在程式裡的那些有趣的東西，會一直留在那的",
+                                "當你從這裡畢業的時候，只是暫時斷線對吧，下次上線，就是更厲害的倉鼠啦",
+                                "那些天馬行空的有趣想法，別丟了他們~  很有趣，有機會偷偷塞一些到你未來作品裡",
+                                "到達停損點的時候，就關上電腦休息吧，有新的想法就記錄在你的虛數世界(DC)保存",
+                                "從接近零開始到現在完成介面與部分串接，真的已經很棒了，只是缺少時間深入了解",
+                                "希望倉鼠能一直帶著好奇的心，探索遊戲和你覺得有趣的事情",
+                                "再忙也要給自己留一點時間小小的休息一下",
+                                "擁有很多故事的倉鼠，會收集到更多故事的",
+                                "幫上了大忙呢! 把巡迴車的功能做的這麼完整，省下我很多事情啦!"
+                            ];
+                            const _random = Math.floor(Math.random() * 10);
+                            io.sendUpdateTourCar(s[_random]);
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                         }
                         else {
@@ -490,7 +538,7 @@ class TourCarController {
         let _random = Math.floor(Math.random() * 3);
         const MapAI = ["No", "Test", "GO"];
         const MapAccNum = [`Apple_${caseName}`, `Test_${caseName}`, `News_${caseName}`];
-        const accNum = MapAccNum.slice(_random);
+        const accNum = MapAccNum[_random];
         let testData = {
             caseName,
             accNum: accNum,

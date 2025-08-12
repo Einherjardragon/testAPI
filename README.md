@@ -36,3 +36,7 @@ node index.js
 
 ## 20250808
 1. 更新單筆case資料儲存
+
+## 20250812
+1. 新增socket通知，用來即時更新
+2. 模擬accNumber資料

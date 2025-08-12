@@ -1,31 +1,7 @@
-2025-08-07 16:40:06.865 [ERROR] Error: connect ECONNREFUSED 127.0.0.1:3306
-    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1146:16)
-    --------------------
-    at Protocol._enqueue (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\protocol\Protocol.js:144:48)
-    at Protocol.handshake (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\protocol\Protocol.js:51:23)
-    at PoolConnection.connect (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\Connection.js:116:18)
-    at Pool.getConnection (D:\M1\Med_M1\M1_Project\API\m1_api\build\node_modules\mysql\lib\Pool.js:48:16)
-    at D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\driver\mysql\MysqlDriver.js:908:18
-    at new Promise (<anonymous>)
-    at MysqlDriver.createPool (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\driver\mysql\MysqlDriver.js:905:16)
-    at MysqlDriver.connect (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\driver\mysql\MysqlDriver.js:295:36)
-    at DataSource.initialize (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\data-source\DataSource.js:125:27)
-    at DataSource.connect (D:\M1\Med_M1\M1_Project\API\m1_api\node_modules\typeorm\data-source\DataSource.js:164:21) {
-  errno: -4078,
-  code: 'ECONNREFUSED',
-  syscall: 'connect',
-  address: '127.0.0.1',
-  port: 3306,
-  fatal: true
-}
-2025-08-07 16:41:14.436 [INFO] Express server has started on port 8081. 
-2025-08-07 16:48:50.565 [INFO] Express server has started on port 8081. 
-2025-08-07 16:55:27.282 [INFO] Express server has started on port 8081. 
-2025-08-07 16:58:01.018 [INFO] Express server has started on port 8081. 
-2025-08-07 17:00:56.602 [INFO] Express server has started on port 8081. 
-2025-08-07 17:03:29.498 [INFO] Express server has started on port 8081. 
-2025-08-07 17:12:18.560 [INFO] Express server has started on port 8081. 
-2025-08-07 17:13:29.712 [INFO] Express server has started on port 8081. 
-2025-08-07 17:37:20.024 [INFO] Express server has started on port 8081. 
-2025-08-07 20:48:56.683 [INFO] Express server has started on port 8081. 
-2025-08-07 20:49:56.653 [ERROR] Delete dicom failed UUID: 78ed3bd7-25a42c59-57b21e70-23db7e84-500853c9. errorMessage: connect ECONNREFUSED 127.0.0.1:8042
+2025-08-12 10:10:31.890 [INFO] Express server has started on port undefined. 
+2025-08-12 10:13:30.297 [INFO] Express server has started on port 8081. 
+2025-08-12 10:18:36.354 [INFO] socket is connection!
+2025-08-12 10:19:07.789 [INFO] socket closed!!
+2025-08-12 10:22:56.839 [INFO] Express server has started on port 8081. 
+2025-08-12 10:25:25.176 [INFO] Express server has started on port 8081. 
+2025-08-12 10:26:42.468 [INFO] Express server has started on port 8081. 

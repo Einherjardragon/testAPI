@@ -16,6 +16,7 @@ const bodyParser = require("body-parser");
 const routes_1 = require("./routes");
 const fileUpload = require('express-fileupload');
 const logger = require("./util/logger");
+const config_data = require('./global.json');
 const session = require("express-session");
 const http = require("http");
 const socket_1 = require("./socket");

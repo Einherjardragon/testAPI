@@ -14,6 +14,9 @@ class SocketConnect {
     sendInfo(message) {
         this.io.emit('dc_upload', message);
     }
+    sendUpdateTourCar(message) {
+        this.io.emit('hamster', message);
+    }
     startCshMed(message) {
         this.io.emit('ana_rq', JSON.stringify(message));
     }
