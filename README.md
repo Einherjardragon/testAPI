@@ -41,3 +41,4 @@ node index.js
 1. 新增socket通知，用來即時更新
 2. 模擬accNumber資料
 3. 單一新增後series數量更新
+4. 模擬accNumber直接mapping情境，只有一筆病人資料則直接對應

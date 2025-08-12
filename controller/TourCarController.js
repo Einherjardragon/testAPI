@@ -15,6 +15,7 @@ const SysLogs_1 = require("../entity/SysLogs");
 const TourCar_1 = require("../entity/TourCar");
 const TourCarCase_1 = require("../entity/TourCarCase");
 const TourCarMapping_1 = require("../entity/TourCarMapping");
+// import { rabbit } from "../util/rabbitMQ";
 const DICOMRecords_1 = require("../entity/DICOMRecords");
 const crypto_1 = require("../util/crypto");
 const logger = require("../util/logger");
@@ -23,18 +24,21 @@ const config_data = require('../global.json');
 class TourCarController {
     constructor() {
         this.aseutil = new crypto_1.aseutil();
+        // private rabbits = new rabbit();
         this.orm_car = (0, typeorm_1.getRepository)(TourCar_1.TourCar);
         this.orm_case = (0, typeorm_1.getRepository)(TourCarCase_1.TourCarCase);
         this.orm_car_mapping = (0, typeorm_1.getRepository)(TourCarMapping_1.TourCarMapping);
         this.orm_Log = (0, typeorm_1.getRepository)(SysLogs_1.SysLog);
         this.orm_recs = (0, typeorm_1.getRepository)(DICOMRecords_1.DICOMRecords);
     }
+    /** 取得TourCar結果 ([httpget] /tourCar) */
     getTourCar(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const getTourCarResult = yield this.orm_car.find();
             return { codeStatus: 200, result: getTourCarResult };
         });
     }
+    /** 儲存TourCar資訊 ([httppost] /tourCar) */
     saveTourCar(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
@@ -58,18 +62,40 @@ class TourCarController {
                             _obj.time = new Date(_body.time);
                             yield _this.orm_car.save(_obj);
                             const caseFiles = _body.files;
+                            //測試 先模擬如果重複記錄下來 後面用來判定是否直接mapping
+                            let duplicates = {};
+                            caseFiles.forEach(item => {
+                                var _a;
+                                let _id = item.caseName.split("#")[1];
+                                if (!((_a = duplicates[_id]) === null || _a === void 0 ? void 0 : _a.length)) {
+                                    duplicates[_id] = [];
+                                    duplicates[_id].push(item.caseName);
+                                }
+                                else {
+                                    duplicates[_id].push(item.caseName);
+                                }
+                            });
                             for (let i = 0; i < caseFiles.length; i++) {
                                 const getTourCarCaseRec = yield _this.orm_case.findOne({ where: { caseName: caseFiles[i].caseName } });
                                 if (!getTourCarCaseRec) {
+                                    //TODO get His資訊放到Minipacs回傳Dicom，此處用於測試選擇accNumber accNum需要選擇則要status顯示需人工介入
                                     const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: (_a = caseFiles[i]) === null || _a === void 0 ? void 0 : _a.patientId } });
+                                    //身分證號
+                                    let _id = caseFiles[i].caseName.split("#")[1];
+                                    //假的accNumber資料產生
+                                    const testData = _this.testMappingData(_id);
+                                    ;
                                     if (!getTestMapping) {
                                         const _mapping = new TourCarMapping_1.TourCarMapping();
-                                        const testData = _this.testMappingData(caseFiles[i].caseName);
-                                        ;
                                         _mapping.patientId = (_b = caseFiles[i]) === null || _b === void 0 ? void 0 : _b.patientId;
                                         _mapping.accNumbers = testData.accNum;
                                         _mapping.mapping_data = JSON.stringify(testData);
                                         yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
+                                    }
+                                    const _obj = new TourCarCase_1.TourCarCase();
+                                    //判斷身分證沒有重複 直接mapping accNumber
+                                    if (duplicates[_id].length == 1) {
+                                        _obj.mapping = testData.accNum;
                                     }
                                     let instancesUUID = "";
                                     const series_data = _this.aseutil.sha1Hash(((_c = caseFiles[i]) === null || _c === void 0 ? void 0 : _c.patientId) + "|" + ((_d = caseFiles[i]) === null || _d === void 0 ? void 0 : _d.studyId) + "|" + ((_e = caseFiles[i]) === null || _e === void 0 ? void 0 : _e.seriesId) + "|" + ((_f = caseFiles[i]) === null || _f === void 0 ? void 0 : _f.instancesId));
@@ -79,7 +105,6 @@ class TourCarController {
                                             instancesUUID += "-";
                                         }
                                     }
-                                    const _obj = new TourCarCase_1.TourCarCase();
                                     _obj.map_job = _body === null || _body === void 0 ? void 0 : _body.job;
                                     _obj.caseName = (_g = caseFiles[i]) === null || _g === void 0 ? void 0 : _g.caseName;
                                     _obj.patientId = (_h = caseFiles[i]) === null || _h === void 0 ? void 0 : _h.patientId;
@@ -108,6 +133,7 @@ class TourCarController {
             });
         });
     }
+    /** 刪除TourCar資訊 ([httpdelete] /tourCar) */
     deleteTourCar(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
@@ -123,6 +149,7 @@ class TourCarController {
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
                         const getTourCarRec = yield _this.orm_car.findOne({ where: { job: _body.job } });
+                        //TODO 刪除Orthanc上的Dicom 先取得UUID
                         const findAllCase = yield _this.orm_case.find({ where: { map_job: _body.job } });
                         const allDeleteUUID = [];
                         for (let i = 0; i < findAllCase.length; i++) {
@@ -136,6 +163,7 @@ class TourCarController {
                             }
                             allDeleteUUID.push(series_result);
                         }
+                        //刪除所有case的dicom
                         _this.deleteItemsFromOrthanc(allDeleteUUID);
                         yield _this.orm_case
                             .createQueryBuilder()
@@ -196,6 +224,7 @@ class TourCarController {
             });
         });
     }
+    /** 取得getTourCar結果 ([httpget] /tourCarCase/:job) */
     getTourCarCase(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const param_job = decodeURIComponent(request.params.job);
@@ -222,6 +251,7 @@ class TourCarController {
             return { codeStatus: 200, result: cases };
         });
     }
+    /** 儲存單一saveTourCarCase資訊 ([httppost] /tourCarCase/:job) */
     saveTourCarCase(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const param_job = decodeURIComponent(request.params.job);
@@ -240,6 +270,20 @@ class TourCarController {
                         const getTourCarCaseRec = yield _this.orm_case.findOne({ where: { caseName: _body.caseName } });
                         if (getTourCarRec) {
                             if (!getTourCarCaseRec) {
+                                //TODO get His資訊放到Minipacs回傳Dicom，此處用於測試選擇accNumber accNum需要選擇則要status顯示需人工介入
+                                const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId } });
+                                //身分證號
+                                let _id = _body.caseName.split("#")[1];
+                                const testData = _this.testMappingData(_id);
+                                let isMapping = false;
+                                if (!getTestMapping) {
+                                    isMapping = true;
+                                    const _mapping = new TourCarMapping_1.TourCarMapping();
+                                    _mapping.patientId = _body === null || _body === void 0 ? void 0 : _body.patientId;
+                                    _mapping.accNumbers = testData.accNum;
+                                    _mapping.mapping_data = JSON.stringify(testData);
+                                    yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
+                                }
                                 getTourCarRec.series = getTourCarRec.series + 1;
                                 yield _this.saveRecord(TourCar_1.TourCar, getTourCarRec);
                                 let instancesUUID = "";
@@ -251,6 +295,9 @@ class TourCarController {
                                     }
                                 }
                                 const _obj = new TourCarCase_1.TourCarCase();
+                                if (isMapping) {
+                                    _obj.mapping = testData.accNum;
+                                }
                                 _obj.map_job = param_job;
                                 _obj.caseName = _body === null || _body === void 0 ? void 0 : _body.caseName;
                                 _obj.patientId = _body === null || _body === void 0 ? void 0 : _body.patientId;
@@ -260,16 +307,6 @@ class TourCarController {
                                 _obj.upload = (_body === null || _body === void 0 ? void 0 : _body.upload) ? 1 : 0;
                                 _obj.status = "Pending";
                                 yield _this.saveRecord(TourCarCase_1.TourCarCase, _obj);
-                                const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId } });
-                                if (!getTestMapping) {
-                                    const _mapping = new TourCarMapping_1.TourCarMapping();
-                                    const testData = _this.testMappingData(_body.caseName);
-                                    ;
-                                    _mapping.patientId = _body === null || _body === void 0 ? void 0 : _body.patientId;
-                                    _mapping.accNumbers = testData.accNum;
-                                    _mapping.mapping_data = JSON.stringify(testData);
-                                    yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
-                                }
                             }
                             else {
                                 reject({ codeStatus: 404, message: `duplicate caseName.` });
@@ -291,6 +328,7 @@ class TourCarController {
             });
         });
     }
+    /** 取得getMappingTable結果 ([httpget] /tourCarMapping/:case) */
     getTourCarCaseMapping(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const param_case = decodeURIComponent(request.params.job);
@@ -298,6 +336,7 @@ class TourCarController {
             return { codeStatus: 200, result: getTourCarCaseMappingResult };
         });
     }
+    /** 重新取得資料 ([httppost] /tourCarCase/:case) */
     reTourCarCaseMapping(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const param_case = decodeURIComponent(request.params.case);
@@ -309,6 +348,7 @@ class TourCarController {
             return { codeStatus: 200, result: getTourCarCaseMappingResult };
         });
     }
+    /** 更新TourCarCase資訊 ([httpput] /tourCarCase) */
     updateTourCarCase(request, response, next, io) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
@@ -357,6 +397,7 @@ class TourCarController {
             });
         });
     }
+    /** retry postToPACS ([httppost] /tourCarCase/:case/retryPACS) */
     retryPACS(request, response, next, io) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
@@ -372,7 +413,7 @@ class TourCarController {
                     try {
                         const getTourCarCaseResult = yield _this.orm_case.findOne({ where: { caseName: param_case } });
                         if (getTourCarCaseResult) {
-                            getTourCarCaseResult.postPACS = 2;
+                            getTourCarCaseResult.postPACS = 2; //(0錯誤 1等待 2完成)
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_Log.save(LogMessage);
                             let s = [
@@ -389,6 +430,19 @@ class TourCarController {
                             ];
                             const _random = Math.floor(Math.random() * 10);
                             io.sendUpdateTourCar(s[_random]);
+                            // getTourCarCaseResult.postPACS = 1; //(0錯誤 1等待 2完成)
+                            // await _this.orm_case.save(getTourCarCaseResult);
+                            // await _this.orm_Log.save(LogMessage);
+                            //通知post to PACS
+                            // let MQ_message = {
+                            //     "task_type": "send_series_task",        // [功能用] 任務類型，供 MQ consumer 分流使用
+                            //     "task_id": "job-20250723-001",          // [記錄用] 任務唯一識別碼，用於追蹤、對應回報與 log
+                            //     "caseName": getTourCarCaseResult.caseName, // [功能用] 哪一筆Case資料，對應後續查詢
+                            //     "series_uid": getTourCarCaseResult.seriesId,        // [功能用] 欲傳送的 DICOM 影像所屬 Series UID，是主要處理目標
+                            //     "target_aets": ["PACS_A", "AI_NODE"],   // [功能用] 傳送目標 AET 清單，minipacs 需逐一傳送
+                            //     "timestamp": now     // [記錄用] 任務建立時間，方便審計與處理順序判斷
+                            // };
+                            // this.rabbits.connecting("xray-UPLOAD", MQ_message, 0);
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                         }
                         else {
@@ -405,6 +459,7 @@ class TourCarController {
             });
         });
     }
+    /** retry AI ([httppost] /tourCarCase/:case/retryAI) */
     retryAI(request, response, next, io) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
@@ -420,7 +475,7 @@ class TourCarController {
                     try {
                         const getTourCarCaseResult = yield _this.orm_case.findOne({ where: { caseName: param_case } });
                         if (getTourCarCaseResult) {
-                            getTourCarCaseResult.postAI = 2;
+                            getTourCarCaseResult.postAI = 2; //(0錯誤 1等待 2完成)
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_Log.save(LogMessage);
                             let s = [
@@ -437,6 +492,7 @@ class TourCarController {
                             ];
                             const _random = Math.floor(Math.random() * 10);
                             io.sendUpdateTourCar(s[_random]);
+                            //TODO AI post
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                         }
                         else {
@@ -453,6 +509,7 @@ class TourCarController {
             });
         });
     }
+    /** 收到Orthanc合併回應 ([httppost] /xray/mergeAccessionResult) */
     updateAccnumberAndCaseStatus(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
@@ -474,16 +531,18 @@ class TourCarController {
                             getTourCarCaseResult.mapping = _body.accession_number;
                             getDicomrecs.accNum = _body.accession_number;
                             getTourCarCaseResult.status = _body.status == "success" ? 'Success' : 'Fail';
+                            //更新資料
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_recs.save(getDicomrecs);
                             yield _this.orm_Log.save(LogMessage);
+                            //通知post to PACS
                             let MQ_message = {
-                                "task_type": "send_series_task",
-                                "task_id": "job-20250723-001",
-                                "caseName": getTourCarCaseResult.caseName,
-                                "series_uid": getTourCarCaseResult.seriesId,
-                                "target_aets": ["PACS_A", "AI_NODE"],
-                                "timestamp": now
+                                "task_type": "send_series_task", // [功能用] 任務類型，供 MQ consumer 分流使用
+                                "task_id": "job-20250723-001", // [記錄用] 任務唯一識別碼，用於追蹤、對應回報與 log
+                                "caseName": getTourCarCaseResult.caseName, // [功能用] 哪一筆Case資料，對應後續查詢
+                                "series_uid": getTourCarCaseResult.seriesId, // [功能用] 欲傳送的 DICOM 影像所屬 Series UID，是主要處理目標
+                                "target_aets": ["PACS_A", "AI_NODE"], // [功能用] 傳送目標 AET 清單，minipacs 需逐一傳送
+                                "timestamp": now // [記錄用] 任務建立時間，方便審計與處理順序判斷
                             };
                             this.rabbits.connecting("xray-UPLOAD", MQ_message, 0);
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
@@ -502,6 +561,7 @@ class TourCarController {
             });
         });
     }
+    /** 收到Orthanc 傳送PACS成功後呼叫 ([httppost] /xray/sendPACSResult) */
     receiveOrthancPostToPACSResult(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const now = new Date(Date.now());
@@ -520,6 +580,27 @@ class TourCarController {
                         LogMessage.evtDatetime = _body.timestamp;
                         if (getTourCarCaseResult) {
                             getTourCarCaseResult.postPACS = _body.status == "success" ? 1 : 0;
+                            //TODO 送出API
+                            // const request_data = {};
+                            // const options = {
+                            //     'method': "POST",
+                            //     'url': "aiInference?.url",
+                            //     'headers': {
+                            //         'Content-Type': 'application/json; charset=utf-8'
+                            //     },
+                            //     body: JSON.stringify(request_data)
+                            // };
+                            // _request(options, async function (error, response) {
+                            //     if (error) {
+                            //         logger.error(`Post to standalone_server ${aiInference?.url} error: ${error}`);
+                            //         getTourCarCaseResult.postAI = 0;
+                            //     } else {
+                            //         logger.info(`Post to standalone_server ${aiInference?.url} successful.`);
+                            //         //更新資料
+                            //         getTourCarCaseResult.postAI = 1;
+                            //     }
+                            //     await _this.orm_case.save(getTourCarCaseResult);
+                            // });
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                         }
                         else {
@@ -555,7 +636,9 @@ class TourCarController {
         return __awaiter(this, void 0, void 0, function* () {
             const connection = (0, typeorm_1.getConnection)("default");
             const queryRunner = connection.createQueryRunner();
+            // 確保 QueryRunner 能夠連線
             yield queryRunner.connect();
+            // 開始事務
             yield queryRunner.startTransaction();
             try {
                 yield queryRunner.manager.save(entity, record);
@@ -563,9 +646,11 @@ class TourCarController {
             }
             catch (error) {
                 console.error(`${entity} Transaction failed. Rolling back: `, error);
+                // 如果出錯，回滾事務
                 yield queryRunner.rollbackTransaction();
             }
             finally {
+                // 釋放 query runner
                 yield queryRunner.release();
             }
         });

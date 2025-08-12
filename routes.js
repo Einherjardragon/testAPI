@@ -58,9 +58,10 @@ exports.Routes = [
         controller: TourCarController_1.TourCarController,
         action: "updateTourCarCase"
     },
+    //Logs
     {
         method: "post",
-        route: "/api/Sys/SysLogs",
+        route: "/api/Sys/SysLogs", /** /System/addLog*/
         controller: SysLogController_1.SysLogController,
         action: "addLogs"
     },

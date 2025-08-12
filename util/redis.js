@@ -17,6 +17,10 @@ class redisClient {
     redisGetData(_key) {
         return __awaiter(this, void 0, void 0, function* () {
             const client = (0, redis_1.createClient)({ url: `redis://${config_data.global.redis_ip}:6379` });
+            // const client = createClient(6379,'127.0.0.1');
+            // createClient({
+            //     url: 'redis://alice:foobared@awesome.redis.server:6380'
+            // });
             client.on('error', err => { return { state: 404, message: `Redis Client Error ${err}` }; });
             yield client.connect();
             const value = yield client.get(_key);
@@ -26,10 +30,16 @@ class redisClient {
     }
     redisSaveData(_key, _value) {
         return __awaiter(this, void 0, void 0, function* () {
+            // const client = createClient();
             const client = (0, redis_1.createClient)({ url: `redis://${config_data.global.redis_ip}:6379` });
+            // createClient({
+            //     url: 'redis://alice:foobared@awesome.redis.server:6380'
+            // });
             client.on('error', err => { logger.error(`Redis Client save ${_key} occur Error ${err}`); return { stateCode: 404, message: `Redis Client Error ${err}` }; });
             yield client.connect();
-            yield client.set(_key, _value, { EX: 604800 });
+            // await client.set(_key, _value);
+            // await client.expire(_key, 86400);
+            yield client.set(_key, _value, { EX: 604800 }); //7天
             yield client.disconnect();
             logger.info(`Redis Client save ${_key} OK.`);
             return { stateCode: 200, message: "OK" };

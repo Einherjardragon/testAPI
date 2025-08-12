@@ -16,15 +16,17 @@ class SysLogController {
     constructor() {
         this.orm_repository = (0, typeorm_1.getRepository)(SysLogs_1.SysLog);
     }
+    /** 取得'query'條件的相關參數 ([httpget] /System/getSearchLog?time) */
     getLogsSearch(request, response, next) {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
             let now = new Date("1900-01-01");
-            let evtTypes = request.query.type;
+            let evtTypes = request.query.type; //request.query.content
             let keyWord = request.query.content;
             let _timeFilter = request.query.time;
             const _page = Number(request.query.page) || 0;
             const _limit = Number(request.query.limits) || 10;
+            //從哪裡開始取多少數量
             const _indexNum = _page ? _page * _limit : 0;
             const _export = (_a = request.query) === null || _a === void 0 ? void 0 : _a.export;
             switch (true) {
@@ -53,10 +55,11 @@ class SysLogController {
                     break;
             }
             let logContent;
-            let logCount = 0;
+            let logCount = 0; //logCount 總數量
             if (!_timeFilter) {
                 logCount = yield this.orm_repository.count();
             }
+            //確認是不是csv輸出 是的話取回全部data
             if (_export) {
                 logContent = yield this.orm_repository.createQueryBuilder("log").select().orderBy("evtDatetime", "DESC").getMany();
             }
@@ -127,10 +130,11 @@ class SysLogController {
             return { logData: logContent, logLength: logCount };
         });
     }
+    /** 取得Patient'query'條件的相關參數 ([httpget] /System/getSearchLog?time) */
     getLogsSearchPatient(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             let now = new Date("1900-01-01");
-            let evtTypes = request.query.type;
+            let evtTypes = request.query.type; //request.query.content
             let keyWord = request.query.content;
             switch (true) {
                 case request.query.time == "last1hour":
@@ -214,6 +218,7 @@ class SysLogController {
             return logContent;
         });
     }
+    /** 新建log訊息 ([httppost] /System/addLog) */
     addLogs(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const req_data = request.body;
