@@ -42,3 +42,7 @@ node index.js
 2. 模擬accNumber資料
 3. 單一新增後series數量更新
 4. 模擬accNumber直接mapping情境，只有一筆病人資料則直接對應
+
+## 20250814
+1. 更新mapping選擇後，若原先以有綁定則清空
+2. bug修復，刪除批次後，模擬資料表同步清空

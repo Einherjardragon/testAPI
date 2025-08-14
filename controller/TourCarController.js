@@ -177,6 +177,7 @@ class TourCarController {
                         else {
                             yield _this.orm_car.remove(getTourCarRec);
                         }
+                        yield _this.orm_car_mapping.clear();
                         yield _this.orm_Log.save(LogMessage);
                         resolve({ codeStatus: 200, message: LogMessage.content });
                     }
@@ -363,6 +364,11 @@ class TourCarController {
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
                         const getTourCarCaseResult = yield _this.orm_case.findOne({ where: { caseName: _body.caseName } });
+                        const prevMappingTourCarCase = yield _this.orm_case.findOne({ where: { mapping: _body.mapping } });
+                        if (prevMappingTourCarCase) {
+                            prevMappingTourCarCase.mapping = null;
+                            yield _this.orm_case.save(prevMappingTourCarCase);
+                        }
                         if (getTourCarCaseResult) {
                             getTourCarCaseResult.mapping = _body === null || _body === void 0 ? void 0 : _body.mapping;
                             yield _this.orm_case.save(getTourCarCaseResult);
@@ -384,7 +390,7 @@ class TourCarController {
                             resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                         }
                         else {
-                            resolve({ codeStatus: 404, message: `Not found this caseName ${_body.caseName}.` });
+                            reject({ codeStatus: 404, message: `Not found this caseName ${_body.caseName}.` });
                         }
                     }
                     catch (err) {
