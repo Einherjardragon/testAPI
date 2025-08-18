@@ -33,6 +33,7 @@ class TourCarController {
     }
     /** 取得TourCar結果 ([httpget] /tourCar) */
     getTourCar(request, response, next) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const getTourCarResult = yield this.orm_car.find();
             for (let i = 0; i < getTourCarResult.length; i++) {
@@ -40,9 +41,18 @@ class TourCarController {
                 const jobName = getTourCarResult[i].job;
                 const _allCase = yield this.orm_case.find({ where: { map_job: jobName } });
                 for (let j = 0; j < _allCase.length; j++) {
-                    const _case_upload_status = _allCase[j].upload;
-                    const _case_pacs_status = _allCase[j].postPACS;
-                    const _case_ai_status = _allCase[j].postAI;
+                    const samePatient = yield this.orm_case.find({ where: { patientId: _allCase[j].patientId } });
+                    let _case_upload_status = _allCase[j].upload;
+                    let _case_pacs_status = _allCase[j].postPACS;
+                    let _case_ai_status = _allCase[j].postAI;
+                    if (samePatient.length > 1) {
+                        for (let p = 0; p < samePatient.length; p++) {
+                            if ((_a = samePatient[p]) === null || _a === void 0 ? void 0 : _a.mapping) {
+                                _case_pacs_status = samePatient[p].postPACS;
+                                _case_ai_status = samePatient[p].postAI;
+                            }
+                        }
+                    }
                     if (_case_upload_status == 0 || _case_pacs_status == 0 || _case_ai_status == 0) {
                         _batchStatus = "Error";
                     }
