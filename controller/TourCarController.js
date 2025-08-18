@@ -35,6 +35,23 @@ class TourCarController {
     getTourCar(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const getTourCarResult = yield this.orm_car.find();
+            let _batchStatus = 'Finish';
+            for (let i = 0; i < getTourCarResult.length; i++) {
+                const jobName = getTourCarResult[i].job;
+                const _allCase = yield this.orm_case.find({ where: { map_job: jobName } });
+                for (let j = 0; j < _allCase.length; j++) {
+                    const _case_upload_status = _allCase[j].upload;
+                    const _case_pacs_status = _allCase[j].postPACS;
+                    const _case_ai_status = _allCase[j].postAI;
+                    if (_case_upload_status == 0 || _case_pacs_status == 0 || _case_ai_status == 0) {
+                        _batchStatus = "Error";
+                    }
+                    else if ((_case_pacs_status == 1 || _case_ai_status == 1) && _batchStatus != "Error") {
+                        _batchStatus = "Pending";
+                    }
+                }
+                getTourCarResult[i].status = _batchStatus;
+            }
             return { codeStatus: 200, result: getTourCarResult };
         });
     }
@@ -371,6 +388,8 @@ class TourCarController {
                         }
                         if (getTourCarCaseResult) {
                             getTourCarCaseResult.mapping = _body === null || _body === void 0 ? void 0 : _body.mapping;
+                            getTourCarCaseResult.postAI = (_body === null || _body === void 0 ? void 0 : _body.postAI) == 0 ? 0 : (_body === null || _body === void 0 ? void 0 : _body.postAI) || 1;
+                            getTourCarCaseResult.postPACS = (_body === null || _body === void 0 ? void 0 : _body.postPACS) == 0 ? 0 : (_body === null || _body === void 0 ? void 0 : _body.postAI) || 1;
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_Log.save(LogMessage);
                             let s = [

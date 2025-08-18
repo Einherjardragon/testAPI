@@ -46,3 +46,6 @@ node index.js
 ## 20250814
 1. 更新mapping選擇後，若原先以有綁定則清空
 2. bug修復，刪除批次後，模擬資料表同步清空
+
+## 20250818
+1. 更新批次狀態，根據Case情況返回對應資訊Finish、Pending、Error
