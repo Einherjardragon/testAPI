@@ -35,8 +35,8 @@ class TourCarController {
     getTourCar(request, response, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const getTourCarResult = yield this.orm_car.find();
-            let _batchStatus = 'Finish';
             for (let i = 0; i < getTourCarResult.length; i++) {
+                let _batchStatus = 'Finish';
                 const jobName = getTourCarResult[i].job;
                 const _allCase = yield this.orm_case.find({ where: { map_job: jobName } });
                 for (let j = 0; j < _allCase.length; j++) {
