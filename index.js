@@ -22,7 +22,7 @@ const http = require("http");
 const socket_1 = require("./socket");
 (0, typeorm_1.createConnection)({
     "type": "mysql",
-    "host": "localhost",
+    "host": "127.0.0.1",
     "port": 3306,
     "username": "root", //mysql 帳號
     "password": "123456", //mysql 密碼
