@@ -389,7 +389,7 @@ class TourCarController {
                         if (getTourCarCaseResult) {
                             getTourCarCaseResult.mapping = _body === null || _body === void 0 ? void 0 : _body.mapping;
                             getTourCarCaseResult.postAI = (_body === null || _body === void 0 ? void 0 : _body.postAI) == 0 ? 0 : (_body === null || _body === void 0 ? void 0 : _body.postAI) || 1;
-                            getTourCarCaseResult.postPACS = (_body === null || _body === void 0 ? void 0 : _body.postPACS) == 0 ? 0 : (_body === null || _body === void 0 ? void 0 : _body.postAI) || 1;
+                            getTourCarCaseResult.postPACS = (_body === null || _body === void 0 ? void 0 : _body.postPACS) == 0 ? 0 : (_body === null || _body === void 0 ? void 0 : _body.postPACS) || 1;
                             yield _this.orm_case.save(getTourCarCaseResult);
                             yield _this.orm_Log.save(LogMessage);
                             let s = [

@@ -49,3 +49,4 @@ node index.js
 
 ## 20250818
 1. 更新批次狀態，根據Case情況返回對應資訊Finish、Pending、Error
+2. 更新Case資料加入postPacs和AI的狀態變更(用於測試)
