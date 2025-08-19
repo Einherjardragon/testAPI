@@ -28,6 +28,10 @@ __decorate([
     __metadata("design:type", String)
 ], TourCarMapping.prototype, "accNumbers", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', length: 256, width: 256, default: '0' }),
+    __metadata("design:type", String)
+], TourCarMapping.prototype, "map_job", void 0);
+__decorate([
     (0, typeorm_1.Column)({ type: 'longtext', default: null }),
     __metadata("design:type", String)
 ], TourCarMapping.prototype, "mapping_data", void 0);

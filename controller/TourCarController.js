@@ -41,7 +41,7 @@ class TourCarController {
                 const jobName = getTourCarResult[i].job;
                 const _allCase = yield this.orm_case.find({ where: { map_job: jobName } });
                 for (let j = 0; j < _allCase.length; j++) {
-                    const samePatient = yield this.orm_case.find({ where: { patientId: _allCase[j].patientId } });
+                    const samePatient = yield this.orm_case.find({ where: { patientId: _allCase[j].patientId, map_job: jobName } });
                     let _case_upload_status = _allCase[j].upload;
                     let _case_pacs_status = _allCase[j].postPACS;
                     let _case_ai_status = _allCase[j].postAI;
@@ -106,7 +106,7 @@ class TourCarController {
                                 const getTourCarCaseRec = yield _this.orm_case.findOne({ where: { caseName: caseFiles[i].caseName } });
                                 if (!getTourCarCaseRec) {
                                     //TODO get His資訊放到Minipacs回傳Dicom，此處用於測試選擇accNumber accNum需要選擇則要status顯示需人工介入
-                                    const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: (_a = caseFiles[i]) === null || _a === void 0 ? void 0 : _a.patientId } });
+                                    const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: (_a = caseFiles[i]) === null || _a === void 0 ? void 0 : _a.patientId, map_job: _body === null || _body === void 0 ? void 0 : _body.job } });
                                     //身分證號
                                     let _id = caseFiles[i].caseName.split("#")[1];
                                     //假的accNumber資料產生
@@ -116,6 +116,7 @@ class TourCarController {
                                         const _mapping = new TourCarMapping_1.TourCarMapping();
                                         _mapping.patientId = (_b = caseFiles[i]) === null || _b === void 0 ? void 0 : _b.patientId;
                                         _mapping.accNumbers = testData.accNum;
+                                        _mapping.map_job = _body === null || _body === void 0 ? void 0 : _body.job;
                                         _mapping.mapping_data = JSON.stringify(testData);
                                         yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
                                     }
@@ -258,7 +259,7 @@ class TourCarController {
             const param_job = decodeURIComponent(request.params.job);
             const cases = yield this.orm_case
                 .createQueryBuilder('case')
-                .leftJoinAndSelect(TourCarMapping_1.TourCarMapping, 'mapping', 'case.patientId = mapping.patientId')
+                .leftJoinAndSelect(TourCarMapping_1.TourCarMapping, 'mapping', 'case.patientId = mapping.patientId AND case.map_job = mapping.map_job')
                 .where('case.map_job = :mapJob', { mapJob: param_job })
                 .select([
                 'case.id AS id',
@@ -299,7 +300,7 @@ class TourCarController {
                         if (getTourCarRec) {
                             if (!getTourCarCaseRec) {
                                 //TODO get His資訊放到Minipacs回傳Dicom，此處用於測試選擇accNumber accNum需要選擇則要status顯示需人工介入
-                                const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId } });
+                                const getTestMapping = yield _this.orm_case.findOne({ where: { patientId: _body.patientId, map_job: param_job } });
                                 //身分證號
                                 let _id = _body.caseName.split("#")[1];
                                 const testData = _this.testMappingData(_id);
@@ -309,6 +310,7 @@ class TourCarController {
                                     const _mapping = new TourCarMapping_1.TourCarMapping();
                                     _mapping.patientId = _body === null || _body === void 0 ? void 0 : _body.patientId;
                                     _mapping.accNumbers = testData.accNum;
+                                    _mapping.map_job = param_job;
                                     _mapping.mapping_data = JSON.stringify(testData);
                                     yield _this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
                                 }
@@ -391,7 +393,7 @@ class TourCarController {
                 return __awaiter(this, void 0, void 0, function* () {
                     try {
                         const getTourCarCaseResult = yield _this.orm_case.findOne({ where: { caseName: _body.caseName } });
-                        const prevMappingTourCarCase = yield _this.orm_case.findOne({ where: { mapping: _body.mapping } });
+                        const prevMappingTourCarCase = yield _this.orm_case.findOne({ where: { mapping: _body.mapping, map_job: _body.job } });
                         if (prevMappingTourCarCase) {
                             prevMappingTourCarCase.mapping = null;
                             yield _this.orm_case.save(prevMappingTourCarCase);
