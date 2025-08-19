@@ -23,6 +23,36 @@ export class TourCarController {
     /** 取得TourCar結果 ([httpget] /tourCar) */
     async getTourCar(request: Request, response: Response, next: NextFunction) {
         const getTourCarResult = await this.orm_car.find();
+
+        for (let i = 0; i < getTourCarResult.length; i++) {
+            let _batchStatus = 'Finish';
+            const jobName = getTourCarResult[i].job;
+            const _allCase = await this.orm_case.find({ where: { map_job: jobName } });
+
+            for (let j = 0; j < _allCase.length; j++) {
+                const samePatient = await this.orm_case.find({ where: { patientId: _allCase[j].patientId, map_job: jobName } });
+                let _case_upload_status = _allCase[j].upload;
+                let _case_pacs_status = _allCase[j].postPACS;
+                let _case_ai_status = _allCase[j].postAI;
+
+                if (samePatient.length > 1) {
+                    for (let p = 0; p < samePatient.length; p++) {
+                        if (samePatient[p]?.mapping) {
+                            _case_pacs_status = samePatient[p].postPACS;
+                            _case_ai_status = samePatient[p].postAI;
+                        }
+                    }
+                }
+
+                if (_case_upload_status == 0 || _case_pacs_status == 0 || _case_ai_status == 0) {
+                    _batchStatus = "Error";
+                } else if ((_case_pacs_status == 1 || _case_ai_status == 1) && _batchStatus != "Error") {
+                    _batchStatus = "Pending";
+                }
+            }
+            getTourCarResult[i].status = _batchStatus;
+        }
+
         return { codeStatus: 200, result: getTourCarResult };
     }
 
@@ -69,7 +99,7 @@ export class TourCarController {
                         const getTourCarCaseRec = await _this.orm_case.findOne({ where: { caseName: caseFiles[i].caseName } });
                         if (!getTourCarCaseRec) {
                             //TODO get His資訊放到Minipacs回傳Dicom，此處用於測試選擇accNumber accNum需要選擇則要status顯示需人工介入
-                            const getTestMapping = await _this.orm_case.findOne({ where: { patientId: caseFiles[i]?.patientId } });
+                            const getTestMapping = await _this.orm_case.findOne({ where: { patientId: caseFiles[i]?.patientId, map_job: _body?.job } });
                             //身分證號
                             let _id = caseFiles[i].caseName.split("#")[1];
                             //假的accNumber資料產生
@@ -79,6 +109,7 @@ export class TourCarController {
                                 const _mapping = new TourCarMapping();
                                 _mapping.patientId = caseFiles[i]?.patientId;
                                 _mapping.accNumbers = testData.accNum;
+                                _mapping.map_job = _body?.job;
                                 _mapping.mapping_data = JSON.stringify(testData);
 
                                 await _this.saveRecord(TourCarMapping, _mapping);
@@ -220,7 +251,7 @@ export class TourCarController {
         const param_job: any = decodeURIComponent(request.params.job);
         const cases = await this.orm_case
             .createQueryBuilder('case')
-            .leftJoinAndSelect(TourCarMapping, 'mapping', 'case.patientId = mapping.patientId')
+            .leftJoinAndSelect(TourCarMapping, 'mapping', 'case.patientId = mapping.patientId AND case.map_job = mapping.map_job')
             .where('case.map_job = :mapJob', { mapJob: param_job })
             .select([
                 'case.id AS id',
@@ -263,7 +294,7 @@ export class TourCarController {
                     if (!getTourCarCaseRec) {
 
                         //TODO get His資訊放到Minipacs回傳Dicom，此處用於測試選擇accNumber accNum需要選擇則要status顯示需人工介入
-                        const getTestMapping = await _this.orm_case.findOne({ where: { patientId: _body.patientId } });
+                        const getTestMapping = await _this.orm_case.findOne({ where: { patientId: _body.patientId, map_job: param_job } });
                         //身分證號
                         let _id = _body.caseName.split("#")[1];
                         const testData = _this.testMappingData(_id);
@@ -274,6 +305,7 @@ export class TourCarController {
                             const _mapping = new TourCarMapping();
                             _mapping.patientId = _body?.patientId;
                             _mapping.accNumbers = testData.accNum;
+                            _mapping.map_job = param_job;
                             _mapping.mapping_data = JSON.stringify(testData);
 
                             await _this.saveRecord(TourCarMapping, _mapping);
@@ -358,8 +390,16 @@ export class TourCarController {
         return new Promise<any>(async function (resolve, reject) {
             try {
                 const getTourCarCaseResult = await _this.orm_case.findOne({ where: { caseName: _body.caseName } });
+                const prevMappingTourCarCase = await _this.orm_case.findOne({ where: { mapping: _body.mapping, map_job: _body.job } });
+                if (prevMappingTourCarCase) {
+                    prevMappingTourCarCase.mapping = null;
+                    await _this.orm_case.save(prevMappingTourCarCase);
+                }
+
                 if (getTourCarCaseResult) {
                     getTourCarCaseResult.mapping = _body?.mapping;
+                    getTourCarCaseResult.postAI = _body?.postAI == 0 ? 0 : _body?.postAI || 1;
+                    getTourCarCaseResult.postPACS = _body?.postPACS == 0 ? 0 : _body?.postPACS || 1;
 
                     await _this.orm_case.save(getTourCarCaseResult);
                     await _this.orm_Log.save(LogMessage);
@@ -382,7 +422,7 @@ export class TourCarController {
 
                     resolve({ codeStatus: 200, message: LogMessage.content, result: getTourCarCaseResult });
                 } else {
-                    resolve({ codeStatus: 404, message: `Not found this caseName ${_body.caseName}.` });
+                    reject({ codeStatus: 404, message: `Not found this caseName ${_body.caseName}.` });
                 }
             } catch (err) {
                 logger.error(`TourCarCase update catch error: ${err}.`);
