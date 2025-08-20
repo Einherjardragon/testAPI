@@ -205,7 +205,13 @@ class TourCarController {
                         else {
                             yield _this.orm_car.remove(getTourCarRec);
                         }
-                        yield _this.orm_car_mapping.clear();
+                        //測試資料清空
+                        yield _this.orm_car_mapping
+                            .createQueryBuilder()
+                            .delete()
+                            .from(TourCarMapping_1.TourCarMapping)
+                            .where("map_job = :mapJob", { mapJob: _body.job })
+                            .execute();
                         yield _this.orm_Log.save(LogMessage);
                         resolve({ codeStatus: 200, message: LogMessage.content });
                     }
