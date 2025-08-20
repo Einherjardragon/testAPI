@@ -51,5 +51,8 @@ node index.js
 1. 更新批次狀態，根據Case情況返回對應資訊Finish、Pending、Error
 2. 更新Case資料加入postPacs和AI的狀態變更(用於測試)
 
-## 20250818
+## 20250819
 1. 更新mapping時，增加批次判定，避免不同批次同病人受到影響
+
+## 20250820
+1. Bugfix 批次刪除，mapping資料accNumber被權清空
