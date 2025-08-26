@@ -18,8 +18,8 @@ class SysLogController {
     }
     /** 取得'query'條件的相關參數 ([httpget] /System/getSearchLog?time) */
     getLogsSearch(request, response, next) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             let now = new Date("1900-01-01");
             let evtTypes = request.query.type; //request.query.content
             let keyWord = request.query.content;
@@ -128,6 +128,7 @@ class SysLogController {
                 logContent[i].evtType = type_text;
             }
             return { logData: logContent, logLength: logCount };
+            // return this.orm_repository.find({ where: { subject: request.params.subject } });
         });
     }
     /** 取得Patient'query'條件的相關參數 ([httpget] /System/getSearchLog?time) */

@@ -33,8 +33,8 @@ class TourCarController {
     }
     /** 取得TourCar結果 ([httpget] /tourCar) */
     getTourCar(request, response, next) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             const getTourCarResult = yield this.orm_car.find();
             for (let i = 0; i < getTourCarResult.length; i++) {
                 let _batchStatus = 'Finish';
@@ -77,8 +77,8 @@ class TourCarController {
                 content: `Add new TourCar Record job: ${_body.job}, ${_body.name}`
             };
             return new Promise(function (resolve, reject) {
-                var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
                 return __awaiter(this, void 0, void 0, function* () {
+                    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
                     try {
                         const _obj = new TourCar_1.TourCar();
                         const getTourCarRec = yield _this.orm_car.findOne({ where: { job: _body.job } });
@@ -173,8 +173,8 @@ class TourCarController {
                 content: `Delete new TourCar Record job: ${_body.job}.`
             };
             return new Promise(function (resolve, reject) {
-                var _a, _b, _c;
                 return __awaiter(this, void 0, void 0, function* () {
+                    var _a, _b, _c;
                     try {
                         const getTourCarRec = yield _this.orm_car.findOne({ where: { job: _body.job } });
                         //TODO 刪除Orthanc上的Dicom 先取得UUID
@@ -205,7 +205,7 @@ class TourCarController {
                         else {
                             yield _this.orm_car.remove(getTourCarRec);
                         }
-                        //測試資料清空
+                        //測試資料清空(原先clear全部清空的短解影響其他批次資料)
                         yield _this.orm_car_mapping
                             .createQueryBuilder()
                             .delete()
@@ -226,8 +226,8 @@ class TourCarController {
         });
     }
     deleteItemsFromOrthanc(list) {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             for (const item of list) {
                 try {
                     const DeleteStudy_str = `${(_a = config_data === null || config_data === void 0 ? void 0 : config_data.global) === null || _a === void 0 ? void 0 : _a.orthanc_dicom_web_api}/series/${item}`;
@@ -372,16 +372,58 @@ class TourCarController {
             return { codeStatus: 200, result: getTourCarCaseMappingResult };
         });
     }
-    /** 重新取得資料 ([httppost] /tourCarCase/:case) */
-    reTourCarCaseMapping(request, response, next) {
+    /** 刪除mapping資料 ([httpdelete] /tourCarMapping) */
+    deleteTourCarCaseMapping(request, response, next, io) {
         return __awaiter(this, void 0, void 0, function* () {
-            const param_case = decodeURIComponent(request.params.case);
+            var _a;
+            const param_case = (_a = request.body) === null || _a === void 0 ? void 0 : _a.caseName;
             const getTourCarCaseRec = yield this.orm_case.findOne({ where: { caseName: param_case } });
-            const getTourCarCaseMappingResult = yield this.orm_car_mapping.findOne({ where: { patientId: getTourCarCaseRec.patientId } });
-            const testData = this.testMappingData(param_case);
-            getTourCarCaseMappingResult.mapping_data = JSON.stringify(testData);
-            yield this.orm_car_mapping.save(getTourCarCaseMappingResult);
-            return { codeStatus: 200, result: getTourCarCaseMappingResult };
+            const getTourCarCaseMappingResult = yield this.orm_car_mapping.findOne({ where: { patientId: getTourCarCaseRec.patientId, map_job: getTourCarCaseRec.map_job } });
+            getTourCarCaseRec.mapping = null;
+            yield this.orm_case.save(getTourCarCaseRec);
+            yield this.orm_car_mapping.remove(getTourCarCaseMappingResult);
+            return { codeStatus: 200, result: "Delete" };
+        });
+    }
+    /** 重新取得資料 ([httppost] /case/mapping) */
+    reTourCarCaseMapping(request, response, next, io) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c;
+            const param_case = (_a = request.body) === null || _a === void 0 ? void 0 : _a.caseName;
+            const _job = (_b = request.body) === null || _b === void 0 ? void 0 : _b.job;
+            const _patientId = (_c = request.body) === null || _c === void 0 ? void 0 : _c.patientId;
+            const getTourCarCaseRec = yield this.orm_case.find({ where: { patientId: _patientId, map_job: _job } });
+            const getTourCarCaseMappingResult = yield this.orm_car_mapping.findOne({ where: { patientId: _patientId, map_job: _job } });
+            try {
+                if (getTourCarCaseMappingResult) {
+                    let _id = param_case.split("#")[1];
+                    const testData = this.testMappingData(_id);
+                    getTourCarCaseMappingResult.accNumbers = testData.accNum;
+                    if (getTourCarCaseRec.length == 1) {
+                        getTourCarCaseRec[0].mapping = testData.accNum;
+                        yield this.orm_case.save(getTourCarCaseRec[0]);
+                    }
+                    yield this.orm_car_mapping.save(getTourCarCaseMappingResult);
+                }
+                else {
+                    const _mapping = new TourCarMapping_1.TourCarMapping();
+                    let _id = param_case.split("#")[1];
+                    const testData = this.testMappingData(_id);
+                    _mapping.patientId = _patientId;
+                    _mapping.map_job = _job;
+                    _mapping.accNumbers = testData.accNum;
+                    _mapping.mapping_data = JSON.stringify(testData);
+                    if (getTourCarCaseRec.length == 1) {
+                        getTourCarCaseRec[0].mapping = testData.accNum;
+                        yield this.orm_case.save(getTourCarCaseRec[0]);
+                    }
+                    yield this.saveRecord(TourCarMapping_1.TourCarMapping, _mapping);
+                }
+            }
+            catch (error) {
+                logger.error(error);
+            }
+            return { codeStatus: 200, result: getTourCarCaseRec };
         });
     }
     /** 更新TourCarCase資訊 ([httpput] /tourCarCase) */

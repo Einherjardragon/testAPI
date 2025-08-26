@@ -23,6 +23,12 @@ exports.Routes = [
         action: "deleteTourCar"
     },
     {
+        method: "delete",
+        route: "/tourCarMapping",
+        controller: TourCarController_1.TourCarController,
+        action: "deleteTourCarCaseMapping"
+    },
+    {
         method: "post",
         route: "/tourCarCase/:case/retryPACS",
         controller: TourCarController_1.TourCarController,
@@ -48,7 +54,7 @@ exports.Routes = [
     },
     {
         method: "post",
-        route: "/tourCarCase/:case",
+        route: "/case/mapping",
         controller: TourCarController_1.TourCarController,
         action: "reTourCarCaseMapping"
     },

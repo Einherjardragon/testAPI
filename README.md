@@ -56,3 +56,6 @@ node index.js
 
 ## 20250820
 1. Bugfix 批次刪除，mapping資料accNumber被權清空
+
+## 20250826
+1. 新增[httpdelete] /tourCarMapping，做accNumber、mapping清空，用於模擬情境
